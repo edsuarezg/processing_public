@@ -36,7 +36,8 @@ void setup() {
   rows = height / videoScale;
   // Construct the Capture object
   printArray(Capture.list());
-  video = new Capture(this, cols, rows);
+  video = new Capture(this, Capture.list()[1]);
+  // video = new Capture(this, cols, rows);
   video.start();
 }
 
