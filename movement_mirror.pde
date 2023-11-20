@@ -14,7 +14,7 @@ int[] previousFrame;
 Capture video;
 Movie movie;
 int cols, rows;
-int cellSize = 15;
+int cellSize = 10;
 // Characters sorted according to their visual density
 String letterOrder = "ReCoNoCeRRECONOCERReconocerReCONOcerReconoceR";
 
@@ -31,14 +31,11 @@ void setup() {
   background(255);
   
   // Load and play the video in a loop
-  movie = new Movie(this, "transit.mov"); //TODO: change to the real video
+    movie = new Movie(this, "FINAL_05_.mp4");
   movie.loop();
   
-  // This the default video input, see the GettingStartedCapture 
-  // example if it creates an error
- 
   printArray(Capture.list());
-  video = new Capture(this, Capture.list()[1]); //change number according to desired camera
+  video = new Capture(this, width, height, Capture.list()[1]); //change number according to desired camera
   // Start capturing the images from the camera
   video.start(); 
   
@@ -48,6 +45,7 @@ void setup() {
   //loadPixels();
   
   // create a letter for each pixel in the row-col space
+  textAlign(CENTER, CENTER);
   letters = new char[cols*rows];
   for (int i = 0; i < cols*rows; i++) {
     int index = int(map(i, 0, cols*rows, 0, letterOrder.length()));
@@ -56,11 +54,11 @@ void setup() {
 }
 
 void movement_mirror_draw(PImage img){
-    background(255);
+    background(0);
     //create_mirror(img);
-    for (int i = 0; i < cols;i++) {
+    for (int i = 2; i < cols-2;i++) {
       // Begin loop for rows
-      for (int j = 0; j < rows;j++) {
+      for (int j = 2; j < rows-2;j++) {
 
         // Where are we, pixel-wise?
         int x = i * cellSize;
@@ -69,10 +67,13 @@ void movement_mirror_draw(PImage img){
 
         // Each rect is colored white with a size determined by brightness
         color c = img.pixels[loc];
-        fill(c);
-        textSize(28);
+        float sz = (brightness(c)/255) * cellSize;
+        fill(c); 
+        ellipse( x + cellSize/2, y + cellSize/2, sz+1, sz+1);
+        fill(255);
+        textSize(10);
         noStroke();
-        text(letters[i*j], x + cellSize/2, y + cellSize/2);
+        text(letters[i*j], x+ cellSize/2+ cellSize/2, y);
         }
     }
 }
@@ -118,7 +119,7 @@ void draw() {
       // Save the current color into the 'previous' buffer
       previousFrame[i] = currColor;
     }
-  
+      print(movementSum,"\n");
       if (movementSum > 14540539) { // find a good threshold
           // there was some movement
           // reset the movement counter
@@ -134,16 +135,28 @@ void draw() {
         }else{
         mov_counter = frameCount - start;
         }
-        print("start: ",start,"\n");
-        print("counter", mov_counter,"\n");
-        if (mov_counter > 1*frameRate){ //replace with sensible value. Thi would mean 5 seconds
+        //print("start: ",start,"\n");
+        //print("counter", mov_counter,"\n");
+        if (mov_counter > 5*frameRate){ //replace with sensible value. Thi would mean 5 seconds
           // If the system is idle for too long, let's switch! 
           // time to switch to the video
+          start = 0;
+          mov_counter = 6*frameRate;
+            if (movie.available() == true) {
+            movie.read(); 
+            }
           image(movie, 0, 0, width, height);
+          if (is_movie_finished(movie)){
+          movie.jump(0);
+          }
         }else{
           // continue running the interactive, while the count runs
           movement_mirror_draw(img);
         }
       }
   }
+}
+
+boolean is_movie_finished(Movie m) {
+  return m.duration() - m.time() < 0.05;
 }
