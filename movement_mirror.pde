@@ -36,7 +36,9 @@ void setup() {
   
   // This the default video input, see the GettingStartedCapture 
   // example if it creates an error
-  video = new Capture(this, width, height);
+ 
+  printArray(Capture.list());
+  video = new Capture(this, Capture.list()[1]); //change number according to desired camera
   // Start capturing the images from the camera
   video.start(); 
   
