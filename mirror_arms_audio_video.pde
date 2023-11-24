@@ -1,6 +1,5 @@
 /**
- * This sketch shows how to use the Amplitude class to analyze the changing
- * "loudness" of a stream of sound. In this case an audio sample is analyzed.
+ * Edgar Suarez: Instalación RECONOCER
  */
 
 import processing.sound.*;
@@ -24,8 +23,8 @@ float x, y;
 float angle1 = 0.0;
 float angle2 = 0.0;
 int segLength = 20;
-int numrows=20;
-int numcols=20;
+int numrows=15;
+int numcols=15;
 float mov_counter;
 int start;
 
@@ -36,10 +35,10 @@ Movie movie;
 int numPixels;
 int[] previousFrame;
 int cols, rows;
-int cellSize = 15;
+int cellSize = 20;
 // Characters sorted according to their visual density
-String letterOrder = "ReCoNoCeRRECONOCERReconocerReCONOcerReconoceR";
-
+String letterOrder = "AtüjaaYachayPi'yawejxiaBakakiAtüjaaYachayPi'yawejxiaBakaki";
+//AtüjaaYachayPi'yawejxiaBakaki
 char[] letters;
 int movementSum = 0; // Amount of movement in the frame
 boolean arms = true;
@@ -52,7 +51,7 @@ public void setup() {
     
   Sound.list();
   Sound s = new Sound(this);
-  s.inputDevice(9);
+  s.inputDevice(11);
 
   //Load and play a soundfile and loop it
   in = new AudioIn(this, 0);
@@ -73,7 +72,7 @@ public void setup() {
   rows = height / cellSize;
     
   printArray(Capture.list());
-  video = new Capture(this, width, height, Capture.list()[1]); //change number according to desired camera
+  video = new Capture(this, width, height, Capture.list()[0]); //change number according to desired camera
   // Start capturing the images from the camera
   video.start(); 
   
@@ -97,7 +96,7 @@ void movieEvent(Movie m) {
 }
 
 void movement_mirror_draw(PImage img){
-  background(0);
+  background(200);
   //create_mirror(img);
   for (int i = 2; i < cols-2;i++) {
     // Begin loop for rows
@@ -110,13 +109,13 @@ void movement_mirror_draw(PImage img){
 
       // Each rect is colored white with a size determined by brightness
       color c = img.pixels[loc];
-      float sz = (brightness(c)/255) * cellSize;
-      fill(c); 
-      ellipse( x + cellSize/2, y + cellSize/2, sz+1, sz+1);
-      fill(255);
-      textSize(10);
+      float sz = (brightness(c)/255) * cellSize*1.5;
+      fill(255-c);
+      //ellipse( x + cellSize/2, y + cellSize/2, sz, sz);
+      //fill(255);
+      textSize(sz);
       noStroke();
-      text(letters[i*j], x+ cellSize/2+ cellSize/2, y);
+      text(letters[i*j], x + cellSize/2, y + cellSize/2);
       }
   }
 }
@@ -129,15 +128,15 @@ void segment(float x, float y, float a, float extra) {
 }
 
 void draw_arms(){
-  strokeWeight(5);
+  strokeWeight(8);
   stroke(0,200);
   background(200);
   //int counter = 35;
   //int marginx = width/(2*numcols);
-  int marginy = height/(2*numrows);
+  //int marginy = height/(2*numrows);
   
-  for (int i = 0; i < numcols; i ++) {
-    for (int j = 0; j < numrows; j ++) {
+  for (int i = 0; i <= numcols; i ++) {
+    for (int j = 0; j <= numrows; j ++) {
     
   // smooth the rms data by smoothing factor
   sum += (numcols*2 - numrows*2 - sum*0.1 + frameCount) * smoothingFactor;
@@ -146,34 +145,34 @@ void draw_arms(){
   //float rms_scaled = sum * (height/2) * 5;
 
   // We draw an arm
-  angle1 = (sum/float(width) - 0.5) * -PI/i - numrows;
-  angle2 = (-sum/float(height) - 0.5) * PI/i;
+  angle1 = (sum/float(width) - 0.5) * -PI;
+  angle2 = (-sum/float(width) - 0.5) * PI;
   
   // draw the clocks
       pushMatrix();
-    segment(i*width/numcols, marginy + j*height/numrows, angle1, rms.analyze()*5000); 
+    segment(i*width/numcols, j*height/numrows, angle1-i, rms.analyze()*250000); 
       popMatrix();//}
     
       pushMatrix();
-    segment(i*width/numcols, marginy + j*height/numrows, angle2, rms.analyze()*5000);  
+    segment(i*width/numcols, j*height/numrows, angle2-j, rms.analyze()*250000);  
     popMatrix();//}
     }
   }
 }
 
 public void draw() {
-  background(200);
   ///////
   // print rms value of mic
-  //print(rms.analyze(),"\n");
-  if (rms.analyze()> 0.04) { // find a good threshold
-          // there was some movement
-          // reset the movement counter
-          start = 0;
-          mov_counter = 0;
-          // run the interactive part
-          draw_arms();
-          arms = true;
+  float thresh = 0.0011;  
+  if (rms.analyze()> thresh) { // find a good threshold
+    print(thresh,"\n");
+    // there was some movement
+    // reset the movement counter
+    start = 0;
+    mov_counter = 0;
+    // run the interactive part
+    draw_arms();
+    arms = true;
   }else{
     if (video.available()) {
     // When using video to manipulate the screen, use video.available() and
@@ -209,8 +208,8 @@ public void draw() {
       // Save the current color into the 'previous' buffer
       previousFrame[i] = currColor;
     }
-    //print(movementSum,"\n");
-    if (movementSum > 14540539 && !arms){ // find a good threshold
+    print(movementSum,"\n");
+    if (movementSum > 14637117 && !arms){ // find a good threshold
             // there was some movement. Run the video part.
             start = 0;
             mov_counter = 0;
@@ -225,7 +224,7 @@ public void draw() {
         }else{mov_counter = frameCount - start;}
         //print("start: ",start,"\n");
         //print("counter", mov_counter,"\n");
-        if (mov_counter > 10*frameRate){  //replace with sensible value. Thi would mean 10 seconds?
+        if (mov_counter > 5*frameRate){  //replace with sensible value. Thi would mean 10 seconds?
           // If the system is idle for too long, let's switch! 
           // time to switch to mirror (if available)
           if (arms){arms = false;}
